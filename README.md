@@ -1,6 +1,11 @@
 # 7-Segment Display Clicker
 
-This Python project lets you interact with a 7-segment number display by clicking on different parts of the display to record values.
+This Python project lets you interact with a 7-segment number display by clicking on different parts of the display to record values.  
+
+I made it mainly to transcribe ciphers that use this as a character set. https://www.dcode.fr/7-segment-display is a great resource, but it took me too long to search for each character.
+
+<img width="208" alt="Screenshot 2024-10-17 at 10 55 57 AM" src="https://github.com/user-attachments/assets/f6bdb9cb-c7e0-4651-a41c-a84d14a4046d">
+
 
 ## Features
 
