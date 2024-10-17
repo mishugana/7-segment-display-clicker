@@ -1,7 +1,7 @@
 """
 7-Segment Display Selector
 
-Author: Matthew Sandler
+Author: Matt Sandler
 Date: October 2024
 
 Description:
