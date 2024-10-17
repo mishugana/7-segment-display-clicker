@@ -1,3 +1,19 @@
+"""
+7-Segment Display Selector
+
+Author: Matthew Sandler
+Date: October 2024
+
+Description:
+This Python script allows users to interact with a 7-segment display by clicking
+on its segments to toggle them on or off. The script supports multiple output formats
+for the display values, such as binary, decimal, and customized segment codes.
+Users can record values, clear them, and copy the recorded values to the clipboard.
+
+License: MIT License
+"""
+
+
 import tkinter as tk
 
 def main():
@@ -27,6 +43,19 @@ def main():
     # List to store recorded values
     recorded_values = []
 
+    # Output format options
+    output_formats = [
+        "ABCDEFG",
+        "Binary (Cathode) (7bit)",
+        "Binary (Anode) (7bit)",
+        "Decimal (0-127)",
+        "0123456 (A=0, B=1, ..., G=6)",
+        "1234567 (A=1, B=2, ..., G=7)"
+    ]
+
+    # Default selected format
+    selected_format = tk.StringVar(value=output_formats[0])
+
     # Function to toggle segment state
     def toggle_segment(event):
         for key, seg_id in segment_ids.items():
@@ -46,29 +75,43 @@ def main():
         segment_ids[key] = seg_id
         canvas.tag_bind(seg_id, '<Button-1>', toggle_segment)
 
-    # Function to get the decimal value of the current segment selection
-    def get_decimal_value():
+    # Function to get the current value based on the selected format
+    def get_output_value():
         # Order of segments for the code
         order = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
         # Create the segment code string
-        code = ''.join(['1' if segment_states[seg] else '0' for seg in order])
-        # Convert the binary code to decimal
-        decimal_value = int(code, 2)
-        return decimal_value
+        binary_code = ''.join(['1' if segment_states[seg] else '0' for seg in order])
+        binary_code = binary_code[::-1]  # Reverse the binary code
+        format_choice = selected_format.get()
+        if format_choice == "ABCDEFG":
+            return ''.join([str(order[i]) if segment_states[order[i]] else '' for i in range(7)])
+        if format_choice == "Binary (Cathode) (7bit)":
+            # No changes needed for cathode binary
+            return binary_code
+        elif format_choice == "Binary (Anode) (7bit)":
+            # Invert the binary code for anode (1 -> 0, 0 -> 1)
+            anode_code = ''.join(['0' if bit == '1' else '1' for bit in binary_code])
+            return anode_code
+        elif format_choice == "Decimal (0-127)":
+            return str(int(binary_code, 2))
+        elif format_choice == "0123456 (A=0, B=1, ..., G=6)":
+            return ''.join([str(i) if segment_states[order[i]] else '' for i in range(7)])
+        elif format_choice == "1234567 (A=1, B=2, ..., G=7)":
+            return ''.join([str(i + 1) if segment_states[order[i]] else '' for i in range(7)])
 
-    # Label to display the current decimal value
+    # Label to display the current value
     output_label = tk.Label(root, text="Current Value: 0", font=("Helvetica", 16))
     output_label.pack(pady=10)
 
     # Function to update the output label
     def update_output():
-        decimal_value = get_decimal_value()
-        output_label.config(text=f"Current Value: {decimal_value}")
+        output_value = get_output_value()
+        output_label.config(text=f"Current Value: {output_value}")
 
     # Function to record the current value and update the list
     def record_value():
-        decimal_value = get_decimal_value()
-        recorded_values.append(decimal_value)
+        output_value = get_output_value()
+        recorded_values.append(output_value)
         # Update the label showing the list of values
         values_label.config(text=f"Recorded Values: {recorded_values}")
 
@@ -88,6 +131,31 @@ def main():
     # Label to display the recorded values
     values_label = tk.Label(root, text="Recorded Values: []", font=("Helvetica", 12))
     values_label.pack(pady=10)
+
+    # Dropdown menu for selecting output format
+    format_menu = tk.OptionMenu(root, selected_format, *output_formats, command=lambda _: update_output())
+    format_menu.pack(pady=10)
+
+    # Function to copy current value to clipboard
+    def copy_to_clipboard():
+        root.clipboard_clear()
+        formatted_values = []
+        
+        for value in recorded_values:
+            # Check if the value is numeric (a decimal number)
+            if value.isdigit():
+                formatted_values.append(value)  # Leave it as is if it's a decimal
+            else:
+                formatted_values.append(f'"{value}"')  # Enclose in quotes if it's not a number
+        
+        # Join the formatted values into a single string and append to the clipboard
+        root.clipboard_append("[" + ",".join(formatted_values) + "]")
+
+
+    # Button to copy the current value to the clipboard
+    copy_button = tk.Button(root, text="Copy values", command=copy_to_clipboard)
+    copy_button.pack(pady=10)
+
 
     # Start the main event loop
     root.mainloop()
